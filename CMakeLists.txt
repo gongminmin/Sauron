@@ -14,3 +14,5 @@ INCLUDE(${SAURON_ROOT_DIR}/cmake/Platform.cmake)
 INCLUDE(${SAURON_ROOT_DIR}/cmake/Compiler.cmake)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
+ADD_SUBDIRECTORY(ConceptValidation/SkyRenderer)
