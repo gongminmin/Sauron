@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SAURON_SKY_RENDERER_CORE_APP_HPP
-#define SAURON_SKY_RENDERER_CORE_APP_HPP
+#ifndef SAURON_SKY_RENDERER_CORE_CONTEXT_HPP
+#define SAURON_SKY_RENDERER_CORE_CONTEXT_HPP
+
+#pragma once
 
 #include <memory>
 
@@ -41,12 +43,12 @@ namespace Sauron
 		{
 			return core_;
 		}
-		
+
+		//! Set system-dependent location manager.
+		void SetLocationManager(std::unique_ptr<LocationManager> loc_mgr);
+
 		//! Get location manager to use for managing locations.
-		LocationManager& GetLocationManager()
-		{
-			return location_mgr_;
-		}
+		LocationManager& GetLocationManager();
 
 	private:
 		// The Context singleton
@@ -56,8 +58,8 @@ namespace Sauron
 		Core core_;
 
 		// Manager for observer locations
-		LocationManager location_mgr_;
+		std::unique_ptr<LocationManager> location_mgr_;
 	};
 }
 
-#endif		// SAURON_SKY_RENDERER_CORE_APP_HPP
+#endif		// SAURON_SKY_RENDERER_CORE_CONTEXT_HPP

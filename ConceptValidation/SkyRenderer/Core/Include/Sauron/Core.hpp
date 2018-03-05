@@ -18,10 +18,15 @@
 #ifndef SAURON_SKY_RENDERER_CORE_CORE_HPP
 #define SAURON_SKY_RENDERER_CORE_CORE_HPP
 
-#include <Sauron/Location.hpp>
+#pragma once
+
+#include <memory>
 
 namespace Sauron
 {
+	class Location;
+	class Observer;
+
 	//! @class Core
 	//! Main class for Sauron sky renderer core processing.
 	class Core
@@ -36,19 +41,18 @@ namespace Sauron
 		//! Render the sky
 		void Render();
 
-		//! Replaces the current location.
-		void SetCurrentLocation(Location const & loc)
-		{
-			curr_location_ = loc;
-		}
-		//! Get the informations on the current location.
-		Location const & GetCurrentLocation() const
-		{
-			return curr_location_;
-		}
+		//! Replaces the current observer.
+		void SetCurrentObserver(std::shared_ptr<Observer> const & ob);
+
+		//! Returns the current observer.
+		std::shared_ptr<Observer> const & GetCurrentObserver() const;
+
+		//! Move the observer to the given location
+		//! @param target the target location
+		void MoveObserverTo(Location const & target);
 
 	private:
-		Location curr_location_;
+		std::shared_ptr<Observer> curr_observer_;
 	};
 }
 

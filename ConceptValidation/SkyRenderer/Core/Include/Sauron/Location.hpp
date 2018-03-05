@@ -18,6 +18,8 @@
 #ifndef SAURON_SKY_RENDERER_CORE_LOCATION_HPP
 #define SAURON_SKY_RENDERER_CORE_LOCATION_HPP
 
+#pragma once
+
 #include <string>
 
 namespace Sauron
@@ -27,9 +29,7 @@ namespace Sauron
 	class Location
 	{
 	public:
-		Location()
-		{
-		}
+		Location();
 
 		//! Get the longitude in degree.
 		float GetLongitude() const

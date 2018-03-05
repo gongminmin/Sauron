@@ -15,45 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Sauron/Context.hpp>
-
-#include <mutex>
-
-#include <boost/assert.hpp>
-
-namespace
-{
-	std::mutex singleton_mutex;
-}
+#include <Sauron/Observer.hpp>
 
 namespace Sauron
 {
-	std::unique_ptr<Context> Context::instance_;
-
-	Context::Context()
+	Observer::Observer(Location const & loc)
+		: curr_location_(loc)
 	{
-	}
-
-	Context& Context::GetInstance()
-	{
-		if (!instance_)
-		{
-			std::lock_guard<std::mutex> lock(singleton_mutex);
-			if (!instance_)
-			{
-				instance_ = std::make_unique<Context>();
-			}
-		}
-		return *instance_;
-	}
-	
-	void Context::SetLocationManager(std::unique_ptr<LocationManager> loc_mgr)
-	{
-		location_mgr_ = std::move(loc_mgr);
-	}
-
-	LocationManager& Context::GetLocationManager()
-	{
-		return *location_mgr_;
 	}
 }

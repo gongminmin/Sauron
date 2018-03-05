@@ -8,11 +8,14 @@ SET(CORE_HEADER_FILES
 	${SAURON_SKY_RENDERER_DIR}/Core/Include/Sauron/Core.hpp
 	${SAURON_SKY_RENDERER_DIR}/Core/Include/Sauron/Location.hpp
 	${SAURON_SKY_RENDERER_DIR}/Core/Include/Sauron/LocationManager.hpp
+	${SAURON_SKY_RENDERER_DIR}/Core/Include/Sauron/Observer.hpp
 )
 SET(CORE_SOURCE_FILES
 	${SAURON_SKY_RENDERER_DIR}/Core/Src/Context.cpp
 	${SAURON_SKY_RENDERER_DIR}/Core/Src/Core.cpp
+	${SAURON_SKY_RENDERER_DIR}/Core/Src/Location.cpp
 	${SAURON_SKY_RENDERER_DIR}/Core/Src/LocationManager.cpp
+	${SAURON_SKY_RENDERER_DIR}/Core/Src/Observer.cpp
 )
 
 SOURCE_GROUP("Core\\Source Files" FILES ${CORE_SOURCE_FILES})

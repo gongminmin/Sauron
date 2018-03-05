@@ -85,9 +85,4 @@ namespace Sauron
 		}
 		return ret;
 	}
-
-	void LocationManager::LocationFromSystem()
-	{
-		// TODO
-	}
 }

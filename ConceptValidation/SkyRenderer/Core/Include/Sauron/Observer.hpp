@@ -15,40 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
-#define SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
+#ifndef SAURON_SKY_RENDERER_CORE_OBSERVER_HPP
+#define SAURON_SKY_RENDERER_CORE_OBSERVER_HPP
 
 #pragma once
 
 #include <Sauron/Location.hpp>
 
-#include <string>
-
 namespace Sauron
 {
-	//! @class LocationManager
-	//! Retrieve and manage the locations.
-	class LocationManager
+	//! @class Observer
+	class Observer
 	{
 	public:
-		LocationManager();
-		virtual ~LocationManager() = default;
+		//! Create a new Observer instance which is at a fixed Location
+		explicit Observer(Location const & loc);
 
-		//! Return a valid location when no valid one was found.
-		Location const & GetLastLocation() const
+		//! Get the informations on the current location
+		Location const & GetCurrentLocation() const
 		{
-			return last_location_;
+			return curr_location_;
 		}
 
-		//! Return the location for a given string can match coordinates.
-		Location LocationForString(std::string const & s) const;
-
-		//! Find location via host system.
-		virtual Location LocationFromSystem() = 0;
-
-	private:
-		Location last_location_;
+	protected:
+		Location curr_location_;
 	};
 }
 
-#endif		// SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
+#endif		// SAURON_SKY_RENDERER_CORE_OBSERVER_HPP

@@ -17,10 +17,19 @@
 
 #include <Sauron/Core.hpp>
 
+#include <Sauron/Context.hpp>
+#include <Sauron/Location.hpp>
+#include <Sauron/LocationManager.hpp>
+#include <Sauron/Observer.hpp>
+
 namespace Sauron
 {
 	Core::Core()
 	{
+		auto& location_mgr = Context::GetInstance().GetLocationManager();
+		auto location = location_mgr.GetLastLocation();
+		location_mgr.LocationFromSystem();
+		curr_observer_ = std::make_shared<Observer>(location);
 	}
 
 	void Core::Update(double delta_time)
@@ -32,5 +41,21 @@ namespace Sauron
 	void Core::Render()
 	{
 		// TODO
+	}
+
+	void Core::SetCurrentObserver(std::shared_ptr<Observer> const & ob)
+	{
+		curr_observer_ = ob;
+	}
+
+	std::shared_ptr<Observer> const & Core::GetCurrentObserver() const
+	{
+		return curr_observer_;
+	}
+
+	void Core::MoveObserverTo(Location const & target)
+	{
+		this->SetCurrentObserver(std::make_shared<Observer>(target));
+		// TODO: Send signals about target changed and location changed
 	}
 }
