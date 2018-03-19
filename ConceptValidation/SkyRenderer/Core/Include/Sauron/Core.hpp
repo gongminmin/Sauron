@@ -26,6 +26,7 @@ namespace Sauron
 {
 	class Location;
 	class Observer;
+	class Projector;
 
 	//! @class Core
 	//! Main class for Sauron sky renderer core processing.
@@ -51,8 +52,15 @@ namespace Sauron
 		//! @param target the target location
 		void MoveObserverTo(Location const & target);
 
+		//! Replaces the current projector.
+		void SetCurrentProjector(std::shared_ptr<Projector> const & proj);
+
+		//! Returns the current projector.
+		std::shared_ptr<Projector> const & GetCurrentProjector() const;
+
 	private:
 		std::shared_ptr<Observer> curr_observer_;
+		std::shared_ptr<Projector> curr_projector_;
 	};
 }
 

@@ -58,4 +58,14 @@ namespace Sauron
 		this->SetCurrentObserver(std::make_shared<Observer>(target));
 		// TODO: Send signals about target changed and location changed
 	}
+	
+	void Core::SetCurrentProjector(std::shared_ptr<Projector> const & proj)
+	{
+		curr_projector_ = proj;
+	}
+
+	std::shared_ptr<Projector> const & Core::GetCurrentProjector() const
+	{
+		return curr_projector_;
+	}
 }
