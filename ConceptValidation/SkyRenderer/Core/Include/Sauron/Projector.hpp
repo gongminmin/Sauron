@@ -18,12 +18,14 @@
 #ifndef SAURON_SKY_RENDERER_CORE_PROJECTOR_HPP
 #define SAURON_SKY_RENDERER_CORE_PROJECTOR_HPP
 
+#pragma once
+
 #include <memory>
 
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
 
 namespace Sauron
 {
@@ -31,6 +33,8 @@ namespace Sauron
 	//! Provide the main interface to all operations of projecting coordinates from sky to screen.
 	class Projector
 	{
+		friend class Core;
+
 	public:
 		//! @struct ProjectorParams
 		//! Contains all the param needed to initialize a Projector
@@ -44,25 +48,43 @@ namespace Sauron
 			float viewport_fov_diameter = 0;									//! diameter of the FOV disk in pixel
 		};
 
-		//! @class ModelViewTranform
-		//! Allows to define non linear operations in addition to the standard linear (Matrix 4d) ModelView transformation.
-		class ModelViewTranform
+		//! @class ModelViewTransform
+		//! Allows to define non linear operations in addition to the standard linear (Matrix 4) ModelView transformation.
+		class ModelViewTransform
 		{
 		public:
-			explicit ModelViewTranform(glm::mat4 const & m);
+			ModelViewTransform() = default;
+			virtual ~ModelViewTransform() = default;
 
-			void Forward(glm::vec3& v) const;
-			void Backward(glm::vec3& v) const;
+			virtual void Forward(glm::dvec3& v) const = 0;
+			virtual void Backward(glm::dvec3& v) const = 0;
 
-			void Combine(glm::mat4 const & m);
+			virtual void Combine(glm::dmat4 const & m) = 0;
 
-			glm::mat4 const & GetTransformMatrix() const;
+			virtual std::shared_ptr<ModelViewTransform> Clone() const = 0;
 
-		private:
-			glm::mat4 transform_matrix_;
+			virtual glm::dmat4 GetTransformMatrix() const = 0;
 		};
 
-		explicit Projector(std::shared_ptr<ModelViewTranform> const & model_view, ProjectorParams const & params);
+		class Mat4Transform : public ModelViewTransform
+		{
+		public:
+			Mat4Transform(glm::dmat4 const & m);
+
+			void Forward(glm::dvec3& v) const override;
+			void Backward(glm::dvec3& v) const override;
+
+			void Combine(glm::dmat4 const & m) override;
+
+			std::shared_ptr<ModelViewTransform> Clone() const override;
+
+			glm::dmat4 GetTransformMatrix() const override;
+
+		private:
+			glm::dmat4 transform_matrix_;
+		};
+
+		explicit Projector(std::shared_ptr<ModelViewTransform> const & model_view);
 		virtual ~Projector() = default;
 
 		//! Get the maximum FOV apperture in degree
@@ -73,9 +95,9 @@ namespace Sauron
 		//! projection type. I would like to return the squared length instead of the length because of performance reasons.
 		//! But then far away objects are not textured any more, perhaps because of a depth buffer overflow although
 		//! the depth test is disabled?
-		virtual bool Forward(glm::vec3& v) const = 0;
+		virtual bool Forward(glm::dvec3& v) const = 0;
 		//! Apply the transformation in the backward projection in place.
-		virtual bool Backward(glm::vec3& v) const = 0;
+		virtual bool Backward(glm::dvec3& v) const = 0;
 		//! Return the small zoom increment to use at the given FOV for nice movements
 		virtual float DeltaZoom(float fov) const = 0;
 
@@ -125,40 +147,52 @@ namespace Sauron
 		//! @param v the vector in the current frame.
 		//! @param win the projected vector in the viewport 2D frame.
 		//! @return true if the projected coordinate is valid.
-		virtual bool Project(glm::vec3 const & v, glm::vec3& win) const;
+		virtual bool Project(glm::dvec3 const & v, glm::dvec3& win) const;
 
 		//! Project the vector v from the current frame into the viewport.
 		//! @param vd the vector in the current frame.
 		//! @return true if the projected coordinate is valid.
-		bool ProjectInPlace(glm::vec3& vd) const;
+		bool ProjectInPlace(glm::dvec3& vd) const;
 
 		//! Project the vector v from the viewport frame into the current frame.
 		//! @param win the vector in the viewport 2D frame. win[0] and win[1] are in screen pixels, win[2] is unused.
 		//! @param v the unprojected direction vector in the current frame.
 		//! @return true if the projected coordinate is valid.
-		bool Unproject(glm::vec3 const & win, glm::vec3& v) const;
-		bool Unproject(float x, float y, glm::vec3& v) const;
+		bool Unproject(glm::dvec3 const & win, glm::dvec3& v) const;
+		bool Unproject(double x, double y, glm::dvec3& v) const;
+
+		//! Get the current model view matrix.
+		std::shared_ptr<ModelViewTransform> const & GetModelViewTransform() const
+		{
+			return model_view_transform_;
+		}
+
+		//! Get the current projection matrix.
+		glm::mat4 GetProjectionMatrix() const;
 
 	protected:
-		std::shared_ptr<ModelViewTranform> model_view_transform_;
+		std::shared_ptr<ModelViewTransform> model_view_transform_;
 
 		ProjectorParams params_;
 		float pixel_per_rad_ = 0;				// pixel per rad at the center of the viewport disk
 		float one_over_z_near_minus_far_ = 0;
+
+	private:
+		void Init(ProjectorParams const & params);
 	};
 
 	class ProjectorPerspective : public Projector
 	{
 	public:
-		ProjectorPerspective(std::shared_ptr<ModelViewTranform> const & model_view, ProjectorParams const & params);
+		explicit ProjectorPerspective(std::shared_ptr<ModelViewTransform> const & model_view);
 
 		float GetMaxFov() const override
 		{
 			return 120;
 		}
 
-		bool Forward(glm::vec3& v) const override;
-		bool Backward(glm::vec3& v) const override;
+		bool Forward(glm::dvec3& v) const override;
+		bool Backward(glm::dvec3& v) const override;
 		float DeltaZoom(float fov) const override;
 
 		float FovToViewScalingFactor(float fov) const override;

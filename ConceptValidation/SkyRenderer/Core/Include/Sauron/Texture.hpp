@@ -15,39 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
-#define SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
+#ifndef SAURON_SKY_RENDERER_CORE_TEXTURE_HPP
+#define SAURON_SKY_RENDERER_CORE_TEXTURE_HPP
 
 #pragma once
 
-#include <Sauron/Location.hpp>
-
 #include <string>
+
+#define GL_GLEXT_PROTOTYPES
+#include <GLES3/gl3.h>
 
 namespace Sauron
 {
-	//! @class LocationManager
-	//! Retrieve and manage the locations.
-	class LocationManager
+	class Texture
 	{
 	public:
-		LocationManager();
+		Texture();
+		~Texture();
 
-		//! Return a valid location when no valid one was found.
-		Location const & GetLastLocation() const
-		{
-			return last_location_;
-		}
+		void Load(std::string const & file_name);
 
-		//! Return the location for a given string can match coordinates.
-		Location LocationForString(std::string const & s) const;
-
-		//! Find location via host system.
-		Location LocationFromSystem();
+		void Bind(uint32_t stage);
 
 	private:
-		Location last_location_;
+		GLuint tex_;
 	};
 }
 
-#endif		// SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
+#endif		// SAURON_SKY_RENDERER_CORE_MODULES_MILKYWAY_HPP
+

@@ -23,7 +23,9 @@
 #include <memory>
 
 #include <Sauron/Core.hpp>
+#include <Sauron/GraphicsSystem.hpp>
 #include <Sauron/LocationManager.hpp>
+#include <Sauron/ModuleManager.hpp>
 
 namespace Sauron
 {
@@ -34,14 +36,27 @@ namespace Sauron
 	public:
 		//! Create and initialize the main Sauron context.
 		Context();
+		~Context();
 
 		//! Get the Context singleton instance.
 		static Context& GetInstance();
 
+		//! Initialize core and all the modules.
+		void Init(void* wnd);
+
+		//! Deinitialize core and all the modules.
+		void Deinit();
+
+		//! Get the graphics system of Sauron.
+		GraphicsSystem& GetGraphicsSystem()
+		{
+			return *graphics_sys_;
+		}
+
 		//! Get the core of Sauron.
 		Core& GetCore()
 		{
-			return core_;
+			return *core_;
 		}
 
 		//! Set system-dependent location manager.
@@ -50,14 +65,33 @@ namespace Sauron
 		//! Get location manager to use for managing locations.
 		LocationManager& GetLocationManager();
 
+		//! Get the module manager to use for accessing any module loaded in the context.
+		ModuleManager& GetModuleManager();
+
+		//! Update all object according to the deltaTime in seconds.
+		void Update(double delta_time);
+
+		//! Draw all registered StelModule in the order defined by the order lists.
+		// 2014-11: OLD COMMENT? What does a void return?
+		// @return the max squared distance in pixels that any object has travelled since the last update.
+		void Draw();
+
 	private:
+		bool initialized_ = false;
+
 		// The Context singleton
 		static std::unique_ptr<Context> instance_;
 
-		// The associated Core instance
-		Core core_;
+		// The associated GraphicsSystem instance
+		std::unique_ptr<GraphicsSystem> graphics_sys_;
 
-		// Manager for observer locations
+		// The associated Core instance
+		std::unique_ptr<Core> core_;
+
+		// Module manager for the context
+		std::unique_ptr<ModuleManager> module_mgr_;
+
+		// Locale manager for the context
 		std::unique_ptr<LocationManager> location_mgr_;
 	};
 }

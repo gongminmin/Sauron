@@ -15,39 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
-#define SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP
+#include <Sauron/ErrorHandling.hpp>
 
-#pragma once
-
-#include <Sauron/Location.hpp>
-
-#include <string>
+#include <iostream>
+#include <stdexcept>
 
 namespace Sauron
 {
-	//! @class LocationManager
-	//! Retrieve and manage the locations.
-	class LocationManager
+#if defined(KLAYGE_DEBUG) || !defined(KLAYGE_BUILTIN_UNREACHABLE)
+	void UnreachableInternal(char const * msg, char const * file, uint32_t line)
 	{
-	public:
-		LocationManager();
-
-		//! Return a valid location when no valid one was found.
-		Location const & GetLastLocation() const
+		if (msg)
 		{
-			return last_location_;
+			std::cerr << msg << std::endl;
+		}
+		if (file)
+		{
+			std::cerr << "UNREACHABLE executed at " << file << ": " << line << "." << std::endl;
+		}
+		else
+		{
+			std::cerr << "UNREACHABLE executed." << std::endl;
 		}
 
-		//! Return the location for a given string can match coordinates.
-		Location LocationForString(std::string const & s) const;
-
-		//! Find location via host system.
-		Location LocationFromSystem();
-
-	private:
-		Location last_location_;
-	};
+		throw std::runtime_error("Unreachable.");
+	}
+#endif
 }
-
-#endif		// SAURON_SKY_RENDERER_CORE_LOCATION_MANAGER_HPP

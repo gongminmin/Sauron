@@ -19,47 +19,60 @@
 
 #include <cmath>
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <Sauron/Util.hpp>
 
 namespace Sauron
 {
-	Projector::ModelViewTranform::ModelViewTranform(glm::mat4 const & m)
+	Projector::Mat4Transform::Mat4Transform(glm::dmat4 const & m)
 		: transform_matrix_(m)
 	{
 	}
 
-	void Projector::ModelViewTranform::Forward(glm::vec3& v) const
+	void Projector::Mat4Transform::Forward(glm::dvec3& v) const
 	{
-		glm::vec4 v4 = transform_matrix_ * glm::vec4(v.x, v.y, v.z, 1.0f);
-		v4 /= v4.w;
-		v = glm::vec3(v4.x, v4.y, v4.z);
+		glm::dvec4 v4 = transform_matrix_ * glm::dvec4(v, 1);
+		v = glm::dvec3(v4.x, v4.y, v4.z);
 	}
 
-	void Projector::ModelViewTranform::Backward(glm::vec3& v) const
+	void Projector::Mat4Transform::Backward(glm::dvec3& v) const
 	{
 		// We need no matrix inversion because we always work with orthogonal matrices (where the transposed is the inverse).
-		glm::vec4 v4 = glm::transpose(transform_matrix_) * glm::vec4(v.x, v.y, v.z, 1.0f);
-		v4 /= v4.w;
-		v = glm::vec3(v4.x, v4.y, v4.z);
+		double const x = v[0] - transform_matrix_[0][3];
+		double const y = v[1] - transform_matrix_[1][3];
+		double const z = v[2] - transform_matrix_[2][3];
+		v[0] = transform_matrix_[0][0] * x + transform_matrix_[1][0] * y + transform_matrix_[2][0] * z;
+		v[1] = transform_matrix_[0][1] * x + transform_matrix_[1][1] * y + transform_matrix_[2][1] * z;
+		v[2] = transform_matrix_[0][2] * x + transform_matrix_[1][2] * y + transform_matrix_[2][2] * z;
 	}
 
-	void Projector::ModelViewTranform::Combine(glm::mat4 const & m)
+	void Projector::Mat4Transform::Combine(glm::dmat4 const & m)
 	{
 		transform_matrix_ *= m;
 	}
 
-	glm::mat4 const & Projector::ModelViewTranform::GetTransformMatrix() const
+	std::shared_ptr<Projector::ModelViewTransform> Projector::Mat4Transform::Clone() const
+	{
+		return std::make_shared<Mat4Transform>(transform_matrix_);
+	}
+
+	glm::dmat4 Projector::Mat4Transform::GetTransformMatrix() const
 	{
 		return transform_matrix_;
 	}
 
 
-	Projector::Projector(std::shared_ptr<ModelViewTranform> const & model_view, ProjectorParams const & params)
-		: model_view_transform_(model_view), params_(params),
-			pixel_per_rad_(0.5f * params_.viewport_fov_diameter
-				/ this->FovToViewScalingFactor(params_.fov * static_cast<float>(M_PI / 360))),
-			one_over_z_near_minus_far_(1 / (params.z_near - params.z_far))
+	Projector::Projector(std::shared_ptr<ModelViewTransform> const & model_view)
+		: model_view_transform_(model_view)
 	{
+	}
+
+	void Projector::Init(ProjectorParams const & params)
+	{
+		params_ = params;
+		
+		pixel_per_rad_ = 0.5f * params_.viewport_fov_diameter / this->FovToViewScalingFactor(Deg2Rad(params_.fov / 2));
+		one_over_z_near_minus_far_ = 1 / (params.z_near - params.z_far);
+
 		// TODO: Handle DPI?
 	}
 	
@@ -68,13 +81,13 @@ namespace Sauron
 		return glm::vec2(params_.viewport_center.x - params_.viewport_xy_wh.x, params_.viewport_center.y - params_.viewport_xy_wh.y);
 	}
 
-	bool Projector::Project(glm::vec3 const & v, glm::vec3& win) const
+	bool Projector::Project(glm::dvec3 const & v, glm::dvec3& win) const
 	{
 		win = v;
 		return this->ProjectInPlace(win);
 	}
 
-	bool Projector::ProjectInPlace(glm::vec3& v) const
+	bool Projector::ProjectInPlace(glm::dvec3& v) const
 	{
 		model_view_transform_->Forward(v);
 		bool const rval = this->Forward(v);
@@ -84,30 +97,40 @@ namespace Sauron
 		return rval;
 	}
 
-	bool Projector::Unproject(glm::vec3 const & win, glm::vec3& v) const
+	bool Projector::Unproject(glm::dvec3 const & win, glm::dvec3& v) const
 	{
-		return this->Unproject(win[0], win[1], v);
+		return this->Unproject(win.x, win.y, v);
 	}
 
-	bool Projector::Unproject(float x, float y, glm::vec3& v) const
+	bool Projector::Unproject(double x, double y, glm::dvec3& v) const
 	{
 		v[0] = (x - params_.viewport_center.x) / pixel_per_rad_;
 		v[1] = (y - params_.viewport_center.y) / pixel_per_rad_;
 		v[2] = 0;
-		const bool rval = this->Backward(v);
+		bool const rval = this->Backward(v);
 		model_view_transform_->Backward(v);
 		return rval;
 	}
 
+	glm::mat4 Projector::GetProjectionMatrix() const
+	{
+		return glm::mat4(
+			2.0f / params_.viewport_xy_wh.z, 0, 0, 0,
+			0, 2.0f / params_.viewport_xy_wh.w, 0, 0,
+			0, 0, -1, 0,
+			-(2.0f * params_.viewport_xy_wh.x + params_.viewport_xy_wh.z) / params_.viewport_xy_wh.z,
+			-(2.0f * params_.viewport_xy_wh.y + params_.viewport_xy_wh.w) / params_.viewport_xy_wh.w, 0, 1);
+	}
 
-	ProjectorPerspective::ProjectorPerspective(std::shared_ptr<ModelViewTranform> const & model_view, ProjectorParams const & params)
-		: Projector(model_view, params)
+
+	ProjectorPerspective::ProjectorPerspective(std::shared_ptr<ModelViewTransform> const & model_view)
+		: Projector(model_view)
 	{
 	}
 
-	bool ProjectorPerspective::Forward(glm::vec3& v) const
+	bool ProjectorPerspective::Forward(glm::dvec3& v) const
 	{
-		float const r = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+		double const r = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 		if (v[2] < 0)
 		{
 			v[0] *= (-1 / v[2]);
@@ -119,16 +142,16 @@ namespace Sauron
 		{
 			v[0] *= 1 / v[2];
 			v[1] /= v[2];
-			v[2] = -std::numeric_limits<float>::max();
+			v[2] = -std::numeric_limits<double>::max();
 			return false;
 		}
-		v[0] = std::numeric_limits<float>::max();
-		v[1] = std::numeric_limits<float>::max();
-		v[2] = -std::numeric_limits<float>::max();
+		v[0] = std::numeric_limits<double>::max();
+		v[1] = std::numeric_limits<double>::max();
+		v[2] = -std::numeric_limits<double>::max();
 		return false;
 	}
 
-	bool ProjectorPerspective::Backward(glm::vec3& v) const
+	bool ProjectorPerspective::Backward(glm::dvec3& v) const
 	{
 		v[2] = std::sqrt(1 / (1 + v[0] * v[0] + v[1] * v[1]));
 		v[0] *= v[2];

@@ -22,14 +22,36 @@
 
 #include <Sauron/Location.hpp>
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+
 namespace Sauron
 {
+	class Planet;
+
 	//! @class Observer
 	class Observer
 	{
 	public:
 		//! Create a new Observer instance which is at a fixed Location
 		explicit Observer(Location const & loc);
+
+		//! Get the position of the home planet center in the heliocentric VSOP87 frame in AU
+		glm::dvec3 GetCenterVsop87Pos() const;
+		//! Get the distance between observer and home planet center in AU.
+		//! This is distance &rho; from Meeus, Astron. Algorithms, 2nd edition 1998, ch.11, p.81f.
+		double GetDistanceFromCenter() const;
+		//! Get the geocentric rectangular coordinates of the observer in AU, plus geocentric latitude &phi;'.
+		//! This is vector &rho; from Meeus, Astron. Algorithms, 2nd edition 1998, ch.11, p.81f.
+		//! The first component is &rho; cos &phi;' [AU], the second component is &rho; sin &phi&' [AU], the third is &phi;' [radians].
+		glm::dvec3 GetTopographicOffsetFromCenter() const;
+
+		//! returns rotation matrix for conversion of alt-azimuthal to equatorial coordinates
+		//! For Earth we need JD(UT), for other planets JDE! To be general, just have both in here!
+		glm::dmat4 GetRotAltAzToEquatorial(double jd, double jde) const;
+		glm::dmat4 GetRotEquatorialToVsop87() const;
+
+		std::shared_ptr<Planet> const & GetHomePlanet() const;
 
 		//! Get the informations on the current location
 		Location const & GetCurrentLocation() const
@@ -39,6 +61,7 @@ namespace Sauron
 
 	protected:
 		Location curr_location_;
+		std::shared_ptr<Planet> planet_;
 	};
 }
 

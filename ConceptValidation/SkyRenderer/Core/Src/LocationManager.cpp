@@ -60,7 +60,7 @@ namespace Sauron
 {
 	LocationManager::LocationManager()
 	{
-		last_location_ = this->LocationForString("47.6801,-122.121");
+		last_location_ = this->LocationFromSystem();
 	}
 
 	Location LocationManager::LocationForString(std::string const & s) const
@@ -84,5 +84,11 @@ namespace Sauron
 			}
 		}
 		return ret;
+	}
+
+	Location LocationManager::LocationFromSystem()
+	{
+		// TODO: Get real location
+		return this->LocationForString("47.6801,-122.121");
 	}
 }
