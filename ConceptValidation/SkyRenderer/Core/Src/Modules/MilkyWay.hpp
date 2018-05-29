@@ -18,9 +18,6 @@
 #ifndef SAURON_SKY_RENDERER_CORE_MODULES_MILKYWAY_HPP
 #define SAURON_SKY_RENDERER_CORE_MODULES_MILKYWAY_HPP
 
-#define GL_GLEXT_PROTOTYPES
-#include <GLES3/gl3.h>
-
 #include <glm/vec3.hpp>
 
 #include <Sauron/DrawEntity.hpp>

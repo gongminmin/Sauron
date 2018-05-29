@@ -324,7 +324,7 @@ namespace Sauron
 		// TODO: Send signals about target changed and location changed
 	}
 
-	std::shared_ptr<Projector> Core::GetProjection(std::shared_ptr<Projector::ModelViewTransform> transform) const
+	std::shared_ptr<Projector> Core::GetProjection(std::shared_ptr<Projector::ModelViewTransform> const & transform) const
 	{
 		auto ret = std::make_shared<ProjectorPerspective>(transform);
 		ret->Init(curr_projector_params_);
@@ -353,19 +353,19 @@ namespace Sauron
 
 	void Core::LookAtJ2000(glm::dvec3 const & pos, glm::dvec3 const & up_vec)
 	{
-		glm::dvec3 f(this->J2000ToAltAz(pos, RefractionMode::Off));
-		glm::dvec3 up(this->J2000ToAltAz(up_vec, RefractionMode::Off));
-		f = glm::normalize(f);
+		auto forward = this->J2000ToAltAz(pos, RefractionMode::Off);
+		auto up = this->J2000ToAltAz(up_vec, RefractionMode::Off);
+		forward = glm::normalize(forward);
 		up = glm::normalize(up);
 
 		// Update the model view matrix
-		glm::dvec3 s = glm::cross(f, up);	// y vector
-		s = glm::normalize(s);
-		glm::dvec3 u = glm::cross(s, f);	// Up vector in AltAz coordinates
-		u = glm::normalize(u);
-		mat_alt_az_model_view_ = glm::dmat4(s[0], u[0], -f[0], 0,
-			s[1], u[1], -f[1], 0,
-			s[2], u[2], -f[2], 0,
+		auto right = glm::cross(forward, up);	// y vector
+		right = glm::normalize(right);
+		up = glm::cross(right, forward);	// Up vector in AltAz coordinates
+		up = glm::normalize(up);
+		mat_alt_az_model_view_ = glm::dmat4(right.x, up.x, -forward.x, 0,
+			right.y, up.y, -forward.y, 0,
+			right.z, up.z, -forward.z, 0,
 			0, 0, 0, 1);
 		invert_mat_alt_az_model_view_ = glm::inverse(mat_alt_az_model_view_);
 	}
@@ -376,14 +376,12 @@ namespace Sauron
 			|| !sky_drawer_
 			|| ((ref_mode == RefractionMode::Auto) && !sky_drawer_->ShowAtmosphere()))
 		{
-			glm::dvec4 v4 = mat_equinox_equ_to_j2000_ * mat_alt_az_to_equinox_equ_ * glm::dvec4(v, 1);
-			return glm::dvec3(v4.x, v4.y, v4.z);
+			return mat_equinox_equ_to_j2000_ * mat_alt_az_to_equinox_equ_ * glm::dvec4(v, 1);
 		}
 
 		glm::dvec3 r = v;
 		sky_drawer_->GetRefraction().Backward(r);
-		glm::dvec4 r4 = mat_equinox_equ_to_j2000_ * mat_alt_az_to_equinox_equ_ * glm::dvec4(r, 1);
-		return glm::dvec3(r4.x, r4.y, r4.z);
+		return mat_equinox_equ_to_j2000_ * mat_alt_az_to_equinox_equ_ * glm::dvec4(r, 1);
 	}
 
 	glm::dvec3 Core::J2000ToAltAz(glm::dvec3 const & v, RefractionMode ref_mode) const
@@ -392,12 +390,10 @@ namespace Sauron
 			|| !sky_drawer_
 			|| ((ref_mode == RefractionMode::Auto) && !sky_drawer_->ShowAtmosphere()))
 		{
-			glm::dvec4 v4 = mat_j2000_to_alt_az_ * glm::dvec4(v, 1);
-			return glm::dvec3(v4.x, v4.y, v4.z);
+			return mat_j2000_to_alt_az_ * glm::dvec4(v, 1);
 		}
 
-		glm::dvec4 r4 = mat_j2000_to_alt_az_ * glm::dvec4(v, 1);
-		glm::dvec3 r = glm::dvec3(r4.x, r4.y, r4.z);
+		glm::dvec3 r = mat_j2000_to_alt_az_ * glm::dvec4(v, 1);
 		sky_drawer_->GetRefraction().Forward(r);
 		return r;
 	}

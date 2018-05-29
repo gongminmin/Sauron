@@ -30,8 +30,7 @@ namespace Sauron
 
 	void Projector::Mat4Transform::Forward(glm::dvec3& v) const
 	{
-		glm::dvec4 v4 = transform_matrix_ * glm::dvec4(v, 1);
-		v = glm::dvec3(v4.x, v4.y, v4.z);
+		v = transform_matrix_ * glm::dvec4(v, 1);
 	}
 
 	void Projector::Mat4Transform::Backward(glm::dvec3& v) const

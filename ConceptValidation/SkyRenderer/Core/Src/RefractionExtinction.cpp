@@ -224,11 +224,9 @@ namespace Sauron
 
 	void Refraction::Forward(glm::dvec3& alt_az_pos) const
 	{
-		glm::dvec4 v4 = pre_transform_mat_ * glm::dvec4(alt_az_pos, 1);
-		alt_az_pos = glm::dvec3(v4.x, v4.y, v4.z);
+		alt_az_pos = pre_transform_mat_ * glm::dvec4(alt_az_pos, 1);
 		this->InnerRefractionForward(alt_az_pos);
-		v4 = post_transform_mat_ * glm::dvec4(alt_az_pos, 1);
-		alt_az_pos = glm::dvec3(v4.x, v4.y, v4.z);
+		alt_az_pos = post_transform_mat_ * glm::dvec4(alt_az_pos, 1);
 	}
 
 	//Bennett's formula is not a strict inverse of Saemundsson's. There is a notable discrepancy (alt!=backward(forward(alt))) for
@@ -236,11 +234,9 @@ namespace Sauron
 	// Below this altitude, we therefore use a polynomial fit that should represent a close inverse of Saemundsson.
 	void Refraction::Backward(glm::dvec3& alt_az_pos) const
 	{
-		glm::dvec4 v4 = invert_post_transform_mat_ * glm::dvec4(alt_az_pos, 1);
-		alt_az_pos = glm::dvec3(v4.x, v4.y, v4.z);
+		alt_az_pos = invert_post_transform_mat_ * glm::dvec4(alt_az_pos, 1);
 		this->InnerRefractionBackward(alt_az_pos);
-		v4 = invert_pre_transform_mat_ * glm::dvec4(alt_az_pos, 1);
-		alt_az_pos = glm::dvec3(v4.x, v4.y, v4.z);
+		alt_az_pos = invert_pre_transform_mat_ * glm::dvec4(alt_az_pos, 1);
 	}
 
 	glm::dmat4 Refraction::GetTransformMatrix() const

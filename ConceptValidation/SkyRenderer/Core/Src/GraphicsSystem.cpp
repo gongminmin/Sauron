@@ -406,7 +406,7 @@ namespace Sauron
 				"\n"
 				"void main()\n"
 				"{\n"
-				"    gl_FragColor = texture2D(tex, v_tex_coord) * v_color * 10.0;\n"
+				"    gl_FragColor = texture2D(tex, v_tex_coord) * v_color;\n"
 				"}\n";
 
 			textures_color_shader_program_ = CreateGLSLProgram(vs_str, fs_str);

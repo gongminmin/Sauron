@@ -79,7 +79,7 @@ namespace Sauron
 
 		//! Get a new instance of projector using the given modelview transformation.
 		//! If not specified the projection used is the one currently used as default.
-		std::shared_ptr<Projector> GetProjection(std::shared_ptr<Projector::ModelViewTransform> transform) const;
+		std::shared_ptr<Projector> GetProjection(std::shared_ptr<Projector::ModelViewTransform> const & transform) const;
 
 		//! Get the current set of parameters to use when creating a new StelProjector.
 		Projector::ProjectorParams GetCurrentProjectorParams() const;
@@ -164,9 +164,9 @@ namespace Sauron
 		// flag to indicate that we show topocentrically corrected coordinates. (Switching to false for planetocentric coordinates is new for 0.14)
 		bool use_topocentric_coordinates_;
 
-		std::pair<double, double> julian_day_;		// first=JD_UT, second=DeltaT=TT-UT. To gain JD_TT, compute JDE=JD.first+JD.second or better just call GetJDE()
-		uint64_t milli_seconds_of_last_jd_update_;	// Time in seconds when the time rate or time last changed
-		double jd_of_last_jd_update_;				// JD when the time rate or time last changed
+		std::pair<double, double> julian_day_ = std::pair<double, double>(0, 0);	// first=JD_UT, second=DeltaT=TT-UT. To gain JD_TT, compute JDE=JD.first+JD.second or better just call GetJDE()
+		uint64_t milli_seconds_of_last_jd_update_ = 0;	// Time in seconds when the time rate or time last changed
+		double jd_of_last_jd_update_ = 0;				// JD when the time rate or time last changed
 	};
 }
 

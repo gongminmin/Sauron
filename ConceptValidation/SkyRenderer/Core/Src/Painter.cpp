@@ -22,9 +22,6 @@
 
 #include <boost/assert.hpp>
 
-#define GL_GLEXT_PROTOTYPES
-#include <GLES3/gl3.h>
-
 #include <Sauron/Context.hpp>
 #include <Sauron/DrawEntity.hpp>
 #include <Sauron/GraphicsSystem.hpp>
